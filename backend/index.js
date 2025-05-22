@@ -72,29 +72,29 @@ const initializeMockBookings = () => {
     const today = new Date().toISOString().split('T')[0]
     console.log(today);
 
-    bookings[`venue_1_${today}_slot_3`] = {
+    bookings[`venue_1_${today}_slot_3_badminton`] = {
         id: uuidv4(),
         venueId: 'venue_1',
         date: today,
         slotId: 'slot_3',
-        userName: 'Rahul Sharma',
+        userName: 'Rahul_Sharma',
         sport: 'badminton',
         bookedAt: new Date().toISOString()
     };
 
-    bookings[`venue_1_${today}_slot_7`] = {
+    bookings[`venue_1_${today}_slot_7_tennis`] = {
         id: uuidv4(),
         venueId: 'venue_1',
         date: today,
         slotId: 'slot_7',
-        userName: 'Priya Singh',
+        userName: 'Priya_Singh',
         sport: 'tennis',
         bookedAt: new Date().toISOString()
     };
 };
 
 // Utility function to generate booking key
-const getBookingKey = (venueId, date, slotId) => `${venueId}_${date}_${slotId}`;
+const getBookingKey = (venueId, date, slotId, sport) => `${venueId}_${date}_${slotId}_${sport.toLowerCase()}`;
 
 // Routes
 
@@ -109,7 +109,7 @@ app.get('/api/venues', (req, res) => {
 // GET available slots for a venue on a specific date
 app.get('/api/venues/:venueId/slots', (req, res) => {
     const { venueId } = req.params;
-    const { date } = req.query;
+    const { date, sport } = req.query;
 
     if (!date) {
         return res.status(400).json({
@@ -118,10 +118,25 @@ app.get('/api/venues/:venueId/slots', (req, res) => {
         });
     }
 
+    if (!sport) {
+        return res.status(400).json({
+            success: false, 
+            message: 'Sport is required' 
+        });
+    }
+
     const venue = venues.find(v => v.id === venueId);
+    
+    // check if sport is available at the venue
+    if (!venue.sports.includes(sport.toLowerCase())) {
+        return res.status(400).json({
+            success: false,
+            message: `Sport ${sport} is not available at this venue`
+        });
+    }
 
     const availableSlots = timeSlots.map(slot => {
-        const bookingKey = getBookingKey(venueId, date, slot.id); // composite key
+        const bookingKey = getBookingKey(venueId, date, slot.id, sport); // composite key
         const isBooked = bookings.hasOwnProperty(bookingKey);
 
         return {
@@ -181,7 +196,7 @@ app.post('/api/booking', (req, res) => {
     }
 
     // check if slot is already booked
-    const bookingKey = getBookingKey(venueId, date, slotId);
+    const bookingKey = getBookingKey(venueId, date, slotId, sport);
     if (bookings[bookingKey]) {
         return res.status(409).json({
             success: false,
@@ -215,59 +230,59 @@ app.post('/api/booking', (req, res) => {
 
 // GET all booking for a user
 app.get('/api/bookings', (req, res) => {
-  const { userName } = req.query;
-  
-  let userBookings = Object.values(bookings);
-  
-  if (userName) {
-    userBookings = userBookings.filter(booking => 
-      booking.userName.toLowerCase().includes(userName.toLowerCase())
-    );
-  }
-  
-  // Enrich bookings with venue and slot details
-  const enrichedBookings = userBookings.map(booking => {
-    const venue = venues.find(v => v.id === booking.venueId);
-    const slot = timeSlots.find(s => s.id === booking.slotId);
-    
-    return {
-      ...booking,
-      venue: venue ? venue.name : 'Unknown Venue',
-      slot: slot ? slot.time : 'Unknown Slot'
-    };
-  });
-  
-  res.json({
-    success: true,
-    data: enrichedBookings
-  });
+    const { userName } = req.query;
+
+    let userBookings = Object.values(bookings);
+
+    if (userName) {
+        userBookings = userBookings.filter(booking =>
+            booking.userName.toLowerCase().includes(userName.toLowerCase())
+        );
+    }
+
+    // Enrich bookings with venue and slot details
+    const enrichedBookings = userBookings.map(booking => {
+        const venue = venues.find(v => v.id === booking.venueId);
+        const slot = timeSlots.find(s => s.id === booking.slotId);
+
+        return {
+            ...booking,
+            venue: venue ? venue.name : 'Unknown Venue',
+            slot: slot ? slot.time : 'Unknown Slot'
+        };
+    });
+
+    res.json({
+        success: true,
+        data: enrichedBookings
+    });
 });
 
 
 // DELETE cancel booking
 app.delete('/api/bookings/:bookingId', (req, res) => {
-  const { bookingId } = req.params;
-  
-  // Find and remove booking
-  const bookingKey = Object.keys(bookings).find(key => 
-    bookings[key].id === bookingId
-  );
-  
-  if (!bookingKey) {
-    return res.status(404).json({
-      success: false,
-      message: 'Booking not found'
+    const { bookingId } = req.params;
+
+    // Find and remove booking
+    const bookingKey = Object.keys(bookings).find(key =>
+        bookings[key].id === bookingId
+    );
+
+    if (!bookingKey) {
+        return res.status(404).json({
+            success: false,
+            message: 'Booking not found'
+        });
+    }
+
+    const deletedBooking = bookings[bookingKey];
+    delete bookings[bookingKey];
+
+    res.json({
+        success: true,
+        message: 'Booking cancelled successfully',
+        data: deletedBooking
     });
-  }
-  
-  const deletedBooking = bookings[bookingKey];
-  delete bookings[bookingKey];
-  
-  res.json({
-    success: true,
-    message: 'Booking cancelled successfully',
-    data: deletedBooking
-  });
 });
 
 // Initialize mock data

@@ -4,7 +4,12 @@ GET http://localhost:3000/api/venues
 ###
 
 ### Get slots for a venue on a specific date
-GET http://localhost:3000/api/venues/venue_1/slots?date=2025-05-22
+GET http://localhost:3000/api/venues/venue_1/slots?date=2025-05-22&sport=tennis
+Content-Type: application/json
+
+###
+
+GET http://localhost:3000/api/venues/venue_1/slots?date=2025-05-22&sport=badminton
 Content-Type: application/json
 
 ###
@@ -16,21 +21,21 @@ Content-Type: application/json
 {
   "venueId": "venue_1",
   "date": "2025-05-22",
-  "slotId": "slot_1",
+  "slotId": "slot_8",
   "userName": "john_doe",
   "sport": "tennis"
 }
 
 ###
 
-### trying to book the same slot again (should fail)
+### trying to book the same slot again => fail
 POST http://localhost:3000/api/booking
 Content-Type: application/json
 
 {
   "venueId": "venue_1",
   "date": "2025-05-22",
-  "slotId": "slot_1",
+  "slotId": "slot_8",
   "userName": "someone_else",
   "sport": "tennis"
 }
