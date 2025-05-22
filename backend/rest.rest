@@ -1,0 +1,90 @@
+### Get all venues
+GET http://localhost:3000/api/venues
+
+###
+
+### Get slots for a venue on a specific date
+GET http://localhost:3000/api/venues/venue_1/slots?date=2025-05-22
+Content-Type: application/json
+
+###
+
+### Create a new booking
+POST http://localhost:3000/api/booking
+Content-Type: application/json
+
+{
+  "venueId": "venue_1",
+  "date": "2025-05-22",
+  "slotId": "slot_1",
+  "userName": "john_doe",
+  "sport": "tennis"
+}
+
+###
+
+### trying to book the same slot again (should fail)
+POST http://localhost:3000/api/booking
+Content-Type: application/json
+
+{
+  "venueId": "venue_1",
+  "date": "2025-05-22",
+  "slotId": "slot_1",
+  "userName": "someone_else",
+  "sport": "tennis"
+}
+
+###
+
+POST http://localhost:3000/api/booking
+Content-Type: application/json
+
+{
+  "venueId": "venue_1",
+  "date": "2025-05-22",
+  "slotId": "slot_2",
+  "userName": "param_bhavsar",
+  "sport": "tennis"
+}
+
+###
+
+POST http://localhost:3000/api/booking
+Content-Type: application/json
+
+{
+  "venueId": "venue_1",
+  "date": "2025-05-22",
+  "slotId": "slot_4",
+  "userName": "param_bhavsar",
+  "sport": "tennis"
+}
+
+###
+
+### Get all bookings (admin)
+GET http://localhost:3000/api/bookings
+Content-Type: application/json
+
+###
+
+### Get bookings by user (john_doe)
+GET http://localhost:3000/api/bookings?userName=john_doe
+Content-Type: application/json
+
+###
+
+GET http://localhost:3000/api/bookings?userName=Priya
+Content-Type: application/json
+
+###
+
+GET http://localhost:3000/api/bookings?userName=param_bhavsar
+Content-Type: application/json
+
+###
+
+### Cancel booking bookingId->params
+DELETE http://localhost:3000/api/bookings/cb35e5e0-8d21-4b95-8e00-b90417a6e04a
+Content-Type: application/json
