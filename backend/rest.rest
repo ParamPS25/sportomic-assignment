@@ -80,7 +80,7 @@ Content-Type: application/json
 
 ###
 
-GET http://localhost:3000/api/bookings?userName=Priya
+GET http://localhost:3000/api/bookings?userName=Priya_Singh
 Content-Type: application/json
 
 ###

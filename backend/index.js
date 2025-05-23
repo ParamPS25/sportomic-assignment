@@ -18,24 +18,28 @@ let venues = [
         id: 'venue_1',
         name: 'SportsPlex Arena',
         location: 'Koramangala, Bangalore',
+        image: 'https://res.cloudinary.com/dgdqt0m8f/image/upload/v1747981953/venue_1_xpuq0x.png',
         sports: ['badminton', 'tennis', 'squash']
     },
     {
         id: 'venue_2',
         name: 'Elite Sports Club',
         location: 'Indiranagar, Bangalore',
+        image: 'https://res.cloudinary.com/dgdqt0m8f/image/upload/v1747981954/venue_2_b55kci.png',
         sports: ['cricket', 'football', 'basketball']
     },
     {
         id: 'venue_3',
         name: 'Champions Ground',
         location: 'HSR Layout, Bangalore',
+        image: 'https://res.cloudinary.com/dgdqt0m8f/image/upload/v1747981954/venue_3_e1hy1q.jpg',
         sports: ['badminton', 'cricket', 'tennis']
     },
     {
         id: 'venue_4',
         name: 'Victory Sports Complex',
         location: 'Whitefield, Bangalore',
+        image: 'https://res.cloudinary.com/dgdqt0m8f/image/upload/v1747981954/venue_5_yguyv1.jpg',
         sports: ['football', 'basketball', 'volleyball']
     }
 ];
@@ -146,6 +150,7 @@ app.get('/api/venues/:venueId/slots', (req, res) => {
         };
     });
 
+    
     res.json({
         success: true,
         data: {
@@ -236,7 +241,8 @@ app.get('/api/bookings', (req, res) => {
 
     if (userName) {
         userBookings = userBookings.filter(booking =>
-            booking.userName.toLowerCase().includes(userName.toLowerCase())
+            // booking.userName.toLowerCase().includes(userName.toLowerCase())
+            booking.userName.toLowerCase() === userName.toLowerCase()
         );
     }
 
