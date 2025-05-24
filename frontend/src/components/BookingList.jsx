@@ -4,14 +4,20 @@ import { RxCross2 } from "react-icons/rx";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
-const BookingList = ({ userName, onClose}) => {
+const BookingList = ({ userName, onClose }) => {
 
   const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (userName) {
+      setLoading(true);
+      setError(null);
       axios.get(`${API_BASE}/api/bookings?userName=${userName}`)
-        .then(res => setBookings(res.data.data || []));
+        .then(res => setBookings(res.data.data || []))
+        .catch(err => setError('Failed to fetch bookings.'))
+        .finally(() => setLoading(false));
     }
   }, [userName]);
 
@@ -22,6 +28,20 @@ const BookingList = ({ userName, onClose}) => {
       .join(' ');
   };
 
+  if (loading) {
+    return (
+      <div className="fixed top-0 right-0 w-80 h-full bg-green-200 shadow-lg p-4 z-50 border-l border-gray-300">
+        <h2 className="text-xl font-bold mb-4 text-center">Loading...</h2>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="fixed top-0 right-0 w-80 h-full bg-red-200 shadow-lg p-4 z-50 border-l border-gray-300">
+        <h2 className="text-xl font-bold mb-4 text-center text-red-600">{error}</h2>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed top-0 right-0 w-80 h-full bg-green-200 shadow-lg p-4 overflow-y-auto z-50 border-l border-gray-300">
