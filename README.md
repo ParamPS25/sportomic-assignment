@@ -34,13 +34,20 @@ Sportomic is a responsive web application for booking sports slots at various ve
 - Node.js / Express.js (with in-memomry data)
 - Vercel and render for deployment
 
+## Screenshots
+
+![image](https://github.com/user-attachments/assets/5fd4ac1f-08a8-487b-b858-6208d09e308a)
+![image](https://github.com/user-attachments/assets/ebb2fd9e-6548-4139-afa9-fa9815a366d7)
+![image](https://github.com/user-attachments/assets/b2121e7b-836e-4b08-9efc-0b4069a612d0)
+![image](https://github.com/user-attachments/assets/5244037c-7947-4d49-8bb6-afce297d6483)
+
 
 ## Installation
 
 ### 1) Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/sportomic-assignment.git
+git clone https://github.com/ParamPS25/sportomic-assignment.git
 cd sportomic-assignment
 ```
 
