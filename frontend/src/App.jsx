@@ -5,7 +5,10 @@ import Header from './components/Header';
 import MessageCard from './components/MessageCard';
 import BookingList from './components/BookingList';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+
 const App = () => {
+
   const [venues, setVenues] = useState([]);
   const [selectedVenue, setSelectedVenue] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
@@ -25,13 +28,57 @@ const App = () => {
   const messageRef = useRef(null);
 
   useEffect(() => {
-    axios.get('http://localhost:3000/api/venues')
+    axios.get(`${API_BASE}/api/venues`)
       .then(res => setVenues(res.data.data || []));
   }, []);
 
   useEffect(() => {
+    const interval = setInterval(() => {
+      setSlots(prevSlots => {
+        if (!prevSlots.length) return prevSlots;
+
+        const indexToBook = Math.floor(Math.random() * prevSlots.length);
+        const randomSlot = prevSlots[indexToBook];
+
+        if (randomSlot.isBooked) return prevSlots;
+
+        // Post booking to backend
+        axios.post(`${API_BASE}/api/booking`, {
+          venueId: selectedVenue,
+          date: selectedDate,
+          slotId: randomSlot.id,
+          userName: `random_user${Math.floor(Math.random() * 1000)}`,
+          sport
+        }).then(res => {
+          console.log('Mock booking created:', res.data);
+        }).catch(err => {
+          console.warn('Mock booking failed:', err.response?.data?.message || err.message);
+        });
+
+        // respectively, updating the UI
+        const updatedSlots = prevSlots.map((slot, idx) => {
+          if (idx === indexToBook) {
+            return {
+              ...slot,
+              isBooked: true,
+              booking: { userName: 'random_user' }
+            };
+          }
+          return slot;
+        });
+
+        return updatedSlots;
+      });
+    }, 7000);
+
+    return () => clearInterval(interval);
+  }, [selectedVenue, selectedDate, sport]);
+
+
+
+  useEffect(() => {
     if (selectedVenue && selectedDate && sport) {
-      axios.get(`http://localhost:3000/api/venues/${selectedVenue}/slots`, {
+      axios.get(`${API_BASE}/api/venues/${selectedVenue}/slots`, {
         params: { date: selectedDate, sport }
       }).then(res => {
         setSlots(res.data.data?.slots || []);
@@ -62,13 +109,28 @@ const App = () => {
   const handleBooking = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:3000/api/booking', {
+      const res = await axios.post(`${API_BASE}/api/booking`, {
         venueId: selectedVenue,
         date: selectedDate,
         slotId: selectedSlotId,
         userName,
         sport
       });
+
+      // Updating slot state to reflect booking
+      setSlots(prev =>
+        prev.map(slot =>
+          slot.id === selectedSlotId
+            ? {
+              ...slot,
+              isBooked: true,
+              booking: { userName }
+            }
+            : slot
+        )
+      );
+
+      setSelectedSlotId('');
       setMessage(res.data.message);
     } catch (err) {
       setMessage(err.response?.data?.message || 'Booking failed');
@@ -120,6 +182,32 @@ const App = () => {
           View My Bookings
         </button>
       </div> */}
+
+      {selectedVenueData && (
+        <div className="w-full md:w-64 bg-green-100 shadow-md rounded-lg p-4 flex-shrink-0 
+            md:fixed md:top-0 md:left-0 md:z-10 md:mt-28 md:pt-6 md:ml-2 mt-4">
+          <img
+            src={selectedVenueData.image}
+            alt={selectedVenueData.name}
+            className="w-full h-40 object-cover rounded-lg mb-4"
+          />
+          <h2 className="text-lg font-bold text-center">{selectedVenueData.name}</h2>
+          <p className="text-sm text-gray-600 text-center">{selectedVenueData.location}</p>
+          <div className="mt-3">
+            <div className="flex flex-wrap justify-center items-center gap-2">
+              {selectedVenueData.sports.map((sport) => (
+                <span
+                  key={sport}
+                  className="bg-blue-200 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded-full"
+                >
+                  {sport.charAt(0).toUpperCase() + sport.slice(1)}
+                </span>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      )}
 
       <div className="max-w-4xl mx-auto p-4">
 
@@ -180,7 +268,7 @@ const App = () => {
                   label = ' (Booked)';
                 } else if (isBookedByMe) {
                   bgColor = 'bg-blue-400 text-white cursor-not-allowed';
-                  label = ' (Your Booking)';
+                  label = ' (Booked by You)';
                 } else if (isSelected) {
                   bgColor = 'bg-green-400 text-white ring-2 ring-green-600';
                   label = ' (Selected)';

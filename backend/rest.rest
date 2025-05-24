@@ -4,7 +4,7 @@ GET http://localhost:3000/api/venues
 ###
 
 ### Get slots for a venue on a specific date
-GET http://localhost:3000/api/venues/venue_1/slots?date=2025-05-22&sport=tennis
+GET http://localhost:3000/api/venues/venue_1/slots?date=2025-05-24&sport=tennis
 Content-Type: application/json
 
 ###

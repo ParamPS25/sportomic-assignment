@@ -14,7 +14,7 @@ const Header = ({ setShowBookings }) => {
     //     </button>
     //   </div>
     // </header>
-    <div>
+    <div className='sticky top-0 left-0 w-full z-50'>
       <div className='header bg-green-500 min-h-24 flex items-center justify-between px-4 py-2'>
         <div>
           <h1 className="text-4xl font-bold text-white text-center py-4 px-2">

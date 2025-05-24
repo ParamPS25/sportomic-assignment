@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { RxCross2 } from "react-icons/rx";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
-const BookingList = ({ userName, onClose }) => {
+const BookingList = ({ userName, onClose}) => {
+
   const [bookings, setBookings] = useState([]);
 
   useEffect(() => {
     if (userName) {
-      axios.get(`http://localhost:3000/api/bookings?userName=${userName}`)
+      axios.get(`${API_BASE}/api/bookings?userName=${userName}`)
         .then(res => setBookings(res.data.data || []));
     }
   }, [userName]);
