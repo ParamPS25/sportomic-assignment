@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import VenueSelector from './components/VenueSelector';
 import axios from 'axios';
 import Header from './components/Header';
@@ -22,6 +22,8 @@ const App = () => {
   const selectedVenueData = venues.find(v => v.id === selectedVenue);
   const availableSports = selectedVenueData?.sports || [];
 
+  const messageRef = useRef(null);
+
   useEffect(() => {
     axios.get('http://localhost:3000/api/venues')
       .then(res => setVenues(res.data.data || []));
@@ -36,6 +38,19 @@ const App = () => {
       });
     }
   }, [selectedVenue, selectedDate, sport]);
+
+  useEffect(() => {
+    if (message && messageRef.current) {
+      messageRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    const timer = setTimeout(() => {
+      setMessage('');
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [message]);
+
 
   const handleVenueChange = (id) => {
     setSelectedVenue(id);
@@ -75,14 +90,16 @@ const App = () => {
               onChange={(e) => {
                 setUserName(e.target.value)
                 console.log(e.target.value);
-                }
+              }
               }
             />
             <button
               className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
               disabled={!userName.trim()}
               onClick={() => {
-                localStorage.setItem('userName', userName);
+                const formattedName = userName.trim().toLowerCase().replace(/\s+/g, '_');
+                localStorage.setItem('userName', formattedName);
+                setUserName(formattedName); // update state too
                 setShowNamePrompt(false);
               }}
             >
@@ -92,7 +109,7 @@ const App = () => {
         </div>
       )}
 
-      <Header 
+      <Header
         setShowBookings={setShowBookings}
       />
       {/* <div className="flex justify-between items-center mb-4">
@@ -104,7 +121,7 @@ const App = () => {
         </button>
       </div> */}
 
-      <div className="max-w-3xl mx-auto p-4">
+      <div className="max-w-4xl mx-auto p-4">
 
         <VenueSelector
           venues={venues}
@@ -129,20 +146,61 @@ const App = () => {
           </select>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-          {slots.map(slot => (
-            <button
-              key={slot.id}
-              onClick={() => !slot.isBooked && setSelectedSlotId(slot.id)}
-              disabled={slot.isBooked}
-              className={`border px-3 py-2 rounded-md transition-all duration-200 
-              ${selectedSlotId === slot.id ? 'bg-green-300 ring-2 ring-green-500' : ''}
-              ${slot.isBooked ? 'bg-red-300 text-gray-500 cursor-not-allowed' : 'hover:bg-blue-100'}`}
-            >
-              {slot.time} {slot.isBooked ? '(Booked)' : ''}
-            </button>
-          ))}
-        </div>
+        {slots.length > 0 && (
+          <div className="border border-gray-300 rounded-xl p-4 shadow-sm mb-6">
+            {/* Legend */}
+            <div className="flex flex-wrap items-center justify-center gap-4 mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-red-300 rounded"></div>
+                <span className="text-sm text-gray-700">Booked by Others</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-blue-400 rounded"></div>
+                <span className="text-sm text-gray-700">Booked by You</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-green-400 rounded"></div>
+                <span className="text-sm text-gray-700">Currently Selecting</span>
+              </div>
+            </div>
+
+            {/* Slot Buttons Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {slots.map(slot => {
+                const isSelected = selectedSlotId === slot.id;
+                const isBookedByMe =
+                  slot.booking?.userName?.toLowerCase() === userName.toLowerCase();
+                const isBookedByOther = slot.isBooked && !isBookedByMe;
+
+                let bgColor = 'bg-white hover:bg-blue-100 text-gray-800';
+                let label = '';
+
+                if (isBookedByOther) {
+                  bgColor = 'bg-red-300 text-white cursor-not-allowed';
+                  label = ' (Booked)';
+                } else if (isBookedByMe) {
+                  bgColor = 'bg-blue-400 text-white cursor-not-allowed';
+                  label = ' (Your Booking)';
+                } else if (isSelected) {
+                  bgColor = 'bg-green-400 text-white ring-2 ring-green-600';
+                  label = ' (Selected)';
+                }
+
+                return (
+                  <button
+                    key={slot.id}
+                    onClick={() => !slot.isBooked && setSelectedSlotId(slot.id)}
+                    disabled={slot.isBooked}
+                    className={`border border-gray-300 px-4 py-3 rounded-xl shadow-sm font-medium text-sm 
+                      transition-all duration-200 ${bgColor} `}
+                  >
+                    {slot.time}{label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <button
           onClick={handleBooking}
@@ -154,6 +212,7 @@ const App = () => {
 
         {message &&
           <MessageCard
+            ref={messageRef}
             message={message}
             type={message.toLowerCase().includes('success') ? 'success' : 'error'}
           />
